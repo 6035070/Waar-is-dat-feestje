@@ -36,3 +36,96 @@ main {
     background-size:cover;
     background-position:center;
 }
+
+.navlogo {
+    flex-grow: 1;
+}
+
+.navlogo img {
+    height: 60px;
+    width: 100px;
+}
+.navbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-family: 'Poppins', sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    height: 36px;
+}
+
+.nav-right {
+    display: flex;
+    gap: 2rem;
+    padding-right: 2rem;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #432447ff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.navbar a::after {
+    content: "";
+    position: absolute;
+    width: 0%;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #8C4F96;
+    transition: width 0.25s ease;
+}
+
+.navbar a:hover {
+    color: #8C4F96;
+}
+
+.navbar a:hover::after {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 1.5rem;
+    }
+
+    .nav-right {
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .navbar a {
+        font-size: 0.9rem;
+    }
+}
+
+header {
+    padding-left:8px;
+    padding-right:8px;
+}
+
+/* styling account panel button */
+
+#accountPanel {
+    background-image: url('./assets/img/accountPanel.png');
+    background-size:contain;
+
+    height:64px;
+    width:64px;
+}

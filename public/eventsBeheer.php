@@ -9,7 +9,9 @@
 </head>
 <body>
 
-<main></main>
+<main>
+    <?php include '../assets/header.php'; ?>
+</main>
     
 </body>
 </html>
