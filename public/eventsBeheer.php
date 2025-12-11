@@ -1,3 +1,51 @@
+<?php
+include '../config/db_connect.php';
+
+$message = "";
+$toastClass = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $EventName = $_POST['EventName'];
+    $EventDesc = $_POST['EventDesc'];
+    $EventTijd = $_POST['EventTijd'];
+    $EventDate = $_POST['EventDate'];
+    $EventLocation = $_POST['EventLocation'];
+    $EventActivity = $_POST['EventActivity'];
+    $EventStatus = $_POST['EventStatus'];
+    $EventNotes = '';
+    $EventDeelnemers = '';
+
+    // Check if naam exists
+    $check = $conn->prepare("SELECT Name FROM Events WHERE Name = ?");
+    $check->bind_param("s", $EventName);
+    $check->execute();
+    $check->store_result();
+
+    if ($check->num_rows > 0) {
+        $message = "Naam is al in gebruik";
+        $toastClass = "bg-warning";
+    } else {
+        $stmt = $conn->prepare("INSERT INTO Events (Name, Description, time, Date, Location, Activity, Status, Notes, Deelnemers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssissssss", $EventName, $EventDesc, $EventTijd, $EventDate, $EventLocation, $EventActivity, $EventStatus, $EventNotes, $EventDeelnemers);
+
+        if ($stmt->execute()) {
+            echo 'Event aangemaakt!';
+            $message = "Account succesvol aangemaakt";
+            $toastClass = "bg-success";
+        } else {
+            echo " Error: " . $stmt->error;
+            $message = "Er ging iets mis";
+            $toastClass = "bg-danger";
+        }
+
+        $stmt->close();
+    }
+
+    $check->close();
+    $conn->close();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,7 +62,7 @@
     <main>
         <?php include '../assets/header.php'; ?>
 
-        <form id="eventBeheer" action="post">
+        <form id="eventBeheer" method="post">
             <h1>Event Beheer</h1>
             <img class="divider" src="../assets/img/snakeSecondary.png">
             <div class="ItemGroup">
