@@ -5,6 +5,8 @@ $message = "";
 $toastClass = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $ID = $_GET['id'] ?? null;
+
     $EventName = $_POST['EventName'];
     $EventDesc = $_POST['EventDesc'];
     $EventTijd = $_POST['EventTijd'];
@@ -16,14 +18,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $EventDeelnemers = '';
 
     // Check if naam exists
-    $check = $conn->prepare("SELECT Name FROM Events WHERE Name = ?");
-    $check->bind_param("s", $EventName);
+    $check = $conn->prepare("SELECT ID FROM Events WHERE ID = ?");
+    $check->bind_param("s", $ID);
     $check->execute();
     $check->store_result();
 
     if ($check->num_rows > 0) {
-        $message = "Naam is al in gebruik";
-        $toastClass = "bg-warning";
+        // update event als de naam overeen komt
+        $stmt = $conn->prepare("UPDATE Events SET Name = ?, Description = ?, time = ?, Date = ?, Location = ?, Activity = ?, Status = ?, Notes = ?, Deelnemers = ? WHERE ID = ?");
+        $stmt->bind_param("ssisssssss", $EventName, $EventDesc, $EventTijd, $EventDate, $EventLocation, $EventActivity, $EventStatus, $EventNotes, $EventDeelnemers, $ID);
+
+        if ($stmt->execute()) {
+            echo 'Event bijgewerkt!';
+            $message = "Event succesvol bijgewerkt";
+            $toastClass = "bg-success";
+        } else {
+            echo " Error: " . $stmt->error;
+            $message = "Er ging iets mis";
+            $toastClass = "bg-danger";
+        }
+
+        $stmt->close();
     } else {
         $stmt = $conn->prepare("INSERT INTO Events (Name, Description, time, Date, Location, Activity, Status, Notes, Deelnemers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssissssss", $EventName, $EventDesc, $EventTijd, $EventDate, $EventLocation, $EventActivity, $EventStatus, $EventNotes, $EventDeelnemers);
