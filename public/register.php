@@ -49,6 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         font-family: 'Poppins', sans-serif;
         background-color: #fefdf9;
         color: #222;
+            padding: 10px;
+
     }
 
     .flexbox-logging {

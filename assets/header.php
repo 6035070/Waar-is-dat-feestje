@@ -1,4 +1,4 @@
-<nav class="navbar">
+<header> <nav class="navbar">
 
     <article class="navlogo">
         <img src="../assets/img/waarishetfeestje_logo.png" alt="Leftovers Logo" class="logo">
@@ -19,9 +19,10 @@
             else {
                 // Normal navigation for all other pages
                 echo '
-                    <a href="../public/index.php">Home</a>
-                    <a href="../public/recipeinputheader.php">Recipe Input</a>
-                    <a href="../public/#.php">Saved Recipes</a>
+                    <a href="../public/dashboard.php">Dashboard</a>
+                    <a href="../public/events.php">Events</a>
+                    <a href="../public/index.php">Event Calendar</a>
+                    <a href="../public/tickets.php">My tickets</a>
                     <a href="../public/logout.php">Logout</a>
 
                 ';
@@ -35,6 +36,8 @@
 
 <style> 
 
+
+
 .navlogo {
     flex-grow: 1;
 }
@@ -44,8 +47,9 @@
     width: 100px;
 }
 .navbar {
+
     width: 100%;
-    background-color: #fffef9; /* off-white background */
+    background-color: #fffef9ff; /* off-white background */
     display: flex;
     align-items: center;
     gap: 40px;
@@ -120,3 +124,5 @@ header {
 
 
 </style>
+
+</header>

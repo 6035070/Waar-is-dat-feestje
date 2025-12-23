@@ -1,3 +1,4 @@
+
 <?php
 include '../config/db_connect.php';
 
@@ -9,13 +10,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Prepare and execute
-    $stmt = $conn->prepare("SELECT password FROM userdata WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, password FROM userdata WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($db_password);
+        $stmt->bind_result($user_id, $db_password);
         $stmt->fetch();
 
         if ($password === $db_password) {
@@ -23,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $toastClass = "bg-success";
             // Start the session and redirect to the dashboard or home page
             session_start();
+            $_SESSION['user_id'] = $user_id;
             $_SESSION['email'] = $email;
             header("Location: dashboard.php");
             exit();
@@ -55,6 +57,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         font-family: 'Poppins', sans-serif;
         background-color: #fefdf9;
         color: #222;
+            padding: 10px;
+
     }
     .flexbox-logging {
         margin: 0;

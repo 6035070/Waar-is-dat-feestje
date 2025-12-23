@@ -1,15 +1,22 @@
 <?php
+// db.php
+
 $servername = "localhost";
 $username = "admin";
 $password = "";
 $dbname = "waarishetfeestje";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode([
+        "success" => false,
+        "error" => "Connection failed: " . $conn->connect_error
+    ]));
 }
+
+$conn->set_charset("utf8mb4");
+
+
 
 ?>
