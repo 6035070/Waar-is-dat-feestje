@@ -2,7 +2,7 @@
 // db.php
 
 $servername = "localhost";
-$username = "admin";
+$username = "root";
 $password = "";
 $dbname = "waarishetfeestje";
 
