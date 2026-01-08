@@ -48,7 +48,7 @@
 .navbar {
 
     width: 100%;
-    background-color: #fffef9ff; /* off-white background */
+    background-color: transparent; /* off-white background */
     display: flex;
     align-items: center;
     gap: 40px;
