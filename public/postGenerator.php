@@ -68,6 +68,10 @@ if (isset($_GET['event']) && is_numeric($_GET['event'])) {
 </head>
 
 <body>
+
+<template id="linkTemplate">
+    <a id='downloadHref'></a> <!-- template voor het downloaden van de gegereeerde post.-->
+</template>>
     <main>
         <?php include '../assets/header.php';
         if ($event) {
@@ -92,7 +96,9 @@ if (isset($_GET['event']) && is_numeric($_GET['event'])) {
     import * as htmlToImage from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm';
     //importeer in library om html elementen in een png te veranderen en gelijk te downloaden.
 
-    document.getElementById('GeneratePost').addEventListener('click', function () { // voeg een onclick event toe om een iamge te maken
+    let generatePost = document.getElementById('GeneratePost');
+
+    generatePost.addEventListener('click', function () { // voeg een onclick event toe om een iamge te maken
         const eventForm = document.getElementById('eventBeheer');
 
         if (!eventForm) {
@@ -102,13 +108,21 @@ if (isset($_GET['event']) && is_numeric($_GET['event'])) {
 
         htmlToImage.toPng(eventForm)
             .then(function (dataUrl) {
-                const link = document.createElement('a');
+                const link = document.getElementById('linkTemplate').content.cloneNode(true).querySelector('a');
                 link.download = 'event_post.png';
+                link.innerHTML = 'Download gegeneerde post'
                 link.href = dataUrl;
-                link.click(); //download de image
+                generatePost.parentNode.appendChild(link); // dit zorgt ervoor dat de template a downloaden kan.
+                //link.click(); //download de image
             })
             .catch(function (error) {
+                let errorMessage = document.createElement('p');
+                errorMessage.innerHTML = 'Er is een fout opgetreden bij het genereren van de afbeelding, check de console voor meldingen.';
+                errorMessage.style.color = 'red';
+                generatePost.parentNode.appendChild(errorMessage);
+
                 console.error('Error generating image:', error);
+
             });
     });
 
