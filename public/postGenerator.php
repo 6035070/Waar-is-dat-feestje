@@ -1,72 +1,117 @@
 <?php
-include '../config/db_connect.php';
+require_once "../config/db_connect.php";
+session_start();
 
-$message = "";
-$toastClass = "";
-$eventData = null;
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-// Fetch event data if ID is provided (for editing)
-$ID = $_GET['id'] ?? null;
-if ($ID) {
-    $fetch = $conn->prepare("SELECT Name, Description, time, Date, Location, Activity, Status FROM Events WHERE ID = ?");
-    $fetch->bind_param("s", $ID);
-    $fetch->execute();
-    $eventData = $fetch->get_result()->fetch_assoc();
-    $fetch->close();
+$user_id = $_SESSION['user_id'];
+
+/* Get upcoming event */
+$today = date('Y-m-d');
+$eventStmt = $conn->prepare("
+    SELECT * FROM events
+    WHERE (user_id = ? OR user_id IS NULL)
+    AND event_date >= ?
+    ORDER BY event_date ASC
+    LIMIT 1
+");
+$eventStmt->bind_param("is", $user_id, $today);
+$eventStmt->execute();
+$upcomingEvent = $eventStmt->get_result()->fetch_assoc();
+
+/* Get ticket count */
+$ticketStmt = $conn->prepare("
+    SELECT COUNT(*) AS total
+    FROM tickets
+    WHERE user_id = ?
+");
+$ticketStmt->bind_param("i", $user_id);
+$ticketStmt->execute();
+$ticketCount = $ticketStmt->get_result()->fetch_assoc()['total'];
+
+/* Popular events: top 5 by sign-ups */
+$popularEvents = $conn->query("
+    SELECT e.*, COUNT(t.id) AS signup_count
+    FROM events e
+    LEFT JOIN tickets t ON t.event_id = e.id
+    GROUP BY e.id
+    ORDER BY signup_count DESC
+    LIMIT 10
+");
+
+$event = null;
+if (isset($_GET['event']) && is_numeric($_GET['event'])) {
+    $eventId = intval($_GET['event']);
+    $popularEvents = $conn->query("
+        SELECT e.*, COUNT(t.id) AS signup_count
+        FROM events e
+        LEFT JOIN tickets t ON t.event_id = e.id
+        WHERE e.id = $eventId
+        GROUP BY e.id
+    ");
+    
+    $event = $popularEvents->fetch_assoc();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
     <main>
-        <?php include '../assets/header.php'; ?>
+        <?php include '../assets/header.php';
+        if ($event) {
+            echo htmlspecialchars($event['name'] ?? 'Event not found');
+        }
+        ?>
 
         <form id="eventBeheer" method="post">
-            <h1>Deel een event</h1>
-            <img class="divider" src="../assets/img/snakeSecondary.png">
-            
-            <div class="ItemGroup">
-                <label for="EventName">Event Naam:</label>
-                <input id="EventName" type="text" name="EventName" value="<?php echo htmlspecialchars($eventData['Name'] ?? ''); ?>" required>
-            </div>
+            <img src="<?= $event['img'] ?: '../assets/img/poster-placeholder.png' ?>" alt="Event poster">
 
-            <div class="ItemGroup">
-                <label for="EventDesc">Omschrijving:</label>
-                <input id="EventDesc" type="text" name="EventDesc" value="<?php echo htmlspecialchars($eventData['Description'] ?? ''); ?>" required>
-            </div>
+            <p><?php echo htmlspecialchars($event['title'] ?? ''); ?></p>
+            <p><?php echo htmlspecialchars($event['event_date'] ?? ''); ?></p>
+            <p><?php echo htmlspecialchars($event['start_time'] ?? ''); ?></p>
+            <p><?php echo htmlspecialchars($event['end_time'] ?? ''); ?></p>
 
-            <div class="ItemGroup">
-                <label for="EventTijd">Tijd:</label>
-                <input id="EventTijd" type="time" name="EventTijd" value="<?php echo htmlspecialchars($eventData['time'] ?? ''); ?>" required>
-
-                <label for="EventDate">Datum:</label>
-                <input id="EventDate" type="date" name="EventDate" value="<?php echo htmlspecialchars($eventData['Date'] ?? ''); ?>" required>
-            </div>
-
-            <div class="ItemGroup">
-                <label for="EventLocation">Locatie:</label>
-                <input id="EventLocation" type="text" name="EventLocation" value="<?php echo htmlspecialchars($eventData['Location'] ?? ''); ?>" required>
-            </div>
-
-            <div class="ItemGroup">
-                <label for="EventActivity">Activiteit:</label>
-                <input id="EventActivity" type="text" name="EventActivity" value="<?php echo htmlspecialchars($eventData['Activity'] ?? ''); ?>" required>
-            </div>
-
-            <div class="ItemGroup">
-                <label for="EventStatus">Status:</label>
-                <input id="EventStatus" type="text" name="EventStatus" value="<?php echo htmlspecialchars($eventData['Status'] ?? ''); ?>" required>
-            </div>
-
-            <input id="SubmitEvent" type="submit" value="Deel Event">
+            <input type="button" id="GeneratePost" value="Genereer Post">
         </form>
     </main>
 </body>
+
+<script type="module">
+    import * as htmlToImage from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm';
+    //importeer in library om html elementen in een png te veranderen en gelijk te downloaden.
+
+    document.getElementById('GeneratePost').addEventListener('click', function () { // voeg een onclick event toe om een iamge te maken
+        const eventForm = document.getElementById('eventBeheer');
+
+        if (!eventForm) {
+            console.error("Target element 'eventBeheer' not found");
+            return;
+        }
+
+        htmlToImage.toPng(eventForm)
+            .then(function (dataUrl) {
+                const link = document.createElement('a');
+                link.download = 'event_post.png';
+                link.href = dataUrl;
+                link.click(); //download de image
+            })
+            .catch(function (error) {
+                console.error('Error generating image:', error);
+            });
+    });
+
+</script>
+
 </html>
